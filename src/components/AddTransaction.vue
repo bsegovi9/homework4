@@ -1,31 +1,53 @@
 <script setup>
-    import {ref, defineEmits} from 'vue'
-    const text = ref('')
-    const amount = ref('')
-    const emit = defineEmits([
-        'transactionSubmitted'
-    ])
-    const onSubmit = () =>{
-        const transactionData = {
-            text: text.value,
-            amount: parseFloat(amount.value),
-        }
-        emit('transactionSubmitted', transactionData)
-        text.value = ''
-        amount.value = ''
-    }
+  import Header from './components/Header.vue';
+  import Balance from './components/Balance.vue';
+  import IncomeExpenses from './components/IncomeExpenses.vue';
+  import AddTransaction from './components/AddTransaction.vue';
+  import TransactionList from './components/TransactionList.vue';
+  import {ref, computed} from 'vue'
+  const transactions = ref([])
+  const sum = computed(()=>{
+    return transactions.value.reduce((acc, x)=>{
+      return acc+x.amount
+    },0)
+  })
+  const moneyIn = computed(()=>{
+    return transactions.value
+    .filter((x)=>x.amount>0)
+    .reduce((acc, x)=>{
+      return acc+x.amount
+    },0)
+  })
+  const moneyOut = computed(()=>{
+    return transactions.value
+    .filter((x)=>x.amount<0)
+    .reduce((acc, x)=>{
+      return acc+x.amount
+    },0)
+  })
+  const handleTransaction = (transactionData) => {
+    transactions.value.push({
+      id: generateID(),
+      text: transactionData.text,
+      amount: transactionData.amount,
+    })
+  }
+  const generateID = () =>{
+    return Math.floor(Math.random()*10000000)
+  }
+  const handleDelete = (id) => {
+    transactions.value = transactions.value.filter((x) => x.id !== id)
+  }
 </script>
+
+
 <template>
-    <h3>Add a new Transaction</h3>
-    <form id="form" @submit.prevent="onSubmit">
-        <div class="form-control">
-            <label for="text">Enter Transaction</label>
-            <input type="text" id="text" v-model="text" placeholder="Enter Transaction...">
-        </div>
-        <div class="form-control">
-            <label for="amount">Enter Transaction Amount</label>
-            <input type="text" id="amount" v-model="amount" placeholder="Enter Negative Value for Expenses">
-        </div>
-        <button class="btn">Add Transaction</button>
-    </form>
+  <Header></Header>
+  <div class="container">
+    <Balance :total="sum"></Balance>
+    <IncomeExpenses :income="moneyIn" :expense="moneyOut"></IncomeExpenses>
+    <AddTransaction @transactionSubmitted="handleTransaction"></AddTransaction>
+    <TransactionList :transactions="transactions" @transactionDeleted="handleDelete"></TransactionList>
+  </div>
+
 </template>
