@@ -60,4 +60,5 @@
     <AddTransaction @transactionSubmitted="handleTransaction"></AddTransaction>
     <TransactionList :transactions="transactions" @transactionDeleted="handleDelete"></TransactionList>
   </div>
+  
   </template>
